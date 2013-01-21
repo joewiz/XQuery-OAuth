@@ -1,0 +1,9 @@
+<meta xmlns="http://exist-db.org/xquery/repo">
+    <author>Norm Walsh</author>
+    <website>https://github.com/joewiz/XQuery-OAuth</website>
+    <license></license>
+    <copyright></copyright>
+    <description>An XQuery module for signing and making OAuth requests.</description>
+    <type>library</type>
+    <status>stable</status>
+</meta>

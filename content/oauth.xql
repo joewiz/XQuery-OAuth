@@ -1,12 +1,10 @@
-xquery version "1.0-ml";
+xquery version "1.0";
 
 module namespace oa="http://marklogic.com/ns/oauth";
 
-declare namespace xh="xdmp:http";
-
-declare default function namespace "http://www.w3.org/2005/xpath-functions";
-
-declare option xdmp:mapping "false";
+import module namespace crypto="http://expath.org/ns/crypto";
+import module namespace http="http://expath.org/ns/http-client";
+import module namespace util="http://exist-db.org/xquery/util";
 
 (:
   let $service :=
@@ -48,15 +46,6 @@ declare function oa:timestamp() as xs:unsignedLong {
              + seconds-from-duration($d)
   return
     xs:unsignedLong($seconds)
-};
-
-declare function oa:sign($key as xs:string, $data as xs:string) as xs:string {
-  let $uri := concat("http://localhost:8190/cgi-bin/hmac-sha1?",
-                     "key=", encode-for-uri($key),
-                     "&amp;data=",encode-for-uri($data))
-  let $resp := xdmp:http-get($uri)
-  return
-    string($resp/digest/hashb64)
 };
 
 declare function oa:signature-method(
@@ -149,8 +138,7 @@ declare function oa:signed-request(
 as element(oa:response)
 {
   let $realm      := string($service/@realm)
-  let $noncei     := xdmp:hash64(concat(current-dateTime(),string(xdmp:random())))
-  let $nonce      := xdmp:integer-to-hex($noncei)
+  let $nonce      := util:uuid(concat(current-dateTime(), util:random()))
   let $stamp      := oa:timestamp()
   let $key        := string($service/oa:authentication/oa:consumer-key)
   let $sigkey     := concat($service/oa:authentication/oa:consumer-key-secret,
@@ -185,7 +173,7 @@ as element(oa:response)
   let $sigbase := string-join(($httpmethod, encode-for-uri($serviceuri),
                                encode-for-uri(string-join($encparams,"&amp;"))), "&amp;")
 
-  let $signature := encode-for-uri(oa:sign($sigkey, $sigbase))
+  let $signature := encode-for-uri(crypto:hmac($sigkey, $sigbase, 'HmacSha1', 'SunJCE'))
 
   (: This is a bit of a pragmatic hack, what's the real answer? :)
   let $authfields := $sigstruct/*[starts-with(local-name(.), "oauth_")
@@ -226,27 +214,15 @@ as element(oa:response)
 
    let $data     := ()
 
-   let $options  := <xh:options>
-                      <xh:headers>
-                        <xh:Authorization>{$authheader}</xh:Authorization>
-                      </xh:headers>
-                      { $data }
-                    </xh:options>
-
-   let $tokenreq := if ($httpmethod = "GET")
-                    then xdmp:http-get($requri, $options)
-                    else xdmp:http-post($requri, $options)
-
-   (:
-   let $trace := xdmp:log(concat("requri: ", $requri))
-   let $trace := xdmp:log(concat("sigbse: ", $sigbase))
-   let $trace := xdmp:log($options)
-   let $trace := xdmp:log($tokenreq[2])
-   :)
+   let $tokenreq := http:send-request(
+                      <http:request href="{$requri}" method="{$httpmethod}">
+                        <http:header name="Authorization" value="{$authheader}"/>
+                      </http:request>
+                      )
 
   return
     <oa:response>
-      { if (string($tokenreq[1]/xh:code) != "200")
+      { if (string($tokenreq[1]/@status) != "200")
         then
           (<oa:error>{$tokenreq[1]}</oa:error>,
            <oa:error-body>{$tokenreq[2]}</oa:error-body>)

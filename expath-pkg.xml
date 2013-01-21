@@ -1,0 +1,10 @@
+<package xmlns="http://expath.org/ns/pkg" name="http://marklogic.com/ns/oauth"
+    abbrev="oauth" version="0.1" spec="1.0">
+    <title>OAuth Request XQuery Library</title>
+    <dependency package="http://expath.org/lib/crypto"/>
+    <!--<dependency package="http://expath.org/ns/http-client"/>-->
+    <xquery>
+        <namespace>http://marklogic.com/ns/oauth</namespace>
+        <file>oauth.xql</file>
+    </xquery>
+</package>
