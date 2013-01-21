@@ -1,4 +1,4 @@
-xquery version "1.0";
+xquery version "3.0";
 
 module namespace oa="http://marklogic.com/ns/oauth";
 
@@ -35,7 +35,7 @@ import module namespace util="http://exist-db.org/xquery/util";
      </oa:service-provider>
 :)
 
-declare function oa:timestamp() as xs:unsignedLong {
+declare %private function oa:timestamp() as xs:unsignedLong {
   let $epoch := xs:dateTime('1970-01-01T00:00:00Z')
   let $now := current-dateTime()
   let $d := $now - $epoch
@@ -48,7 +48,7 @@ declare function oa:timestamp() as xs:unsignedLong {
     xs:unsignedLong($seconds)
 };
 
-declare function oa:signature-method(
+declare %private function oa:signature-method(
   $service as element(oa:service-provider)
 ) as xs:string
 {
@@ -58,7 +58,7 @@ declare function oa:signature-method(
             "Service must support 'HMAC-SHA1' signatures.")
 };
 
-declare function oa:http-method(
+declare %private function oa:http-method(
   $proposed-method as xs:string
 ) as xs:string
 {
