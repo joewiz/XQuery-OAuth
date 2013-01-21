@@ -33,22 +33,4 @@ or place it in eXist-db's 'autodeploy' folder.
 
     import module namespace oa="http://marklogic.com/ns/oauth";
 
-### Call the oauth:request() function with your OAuth API's info
-
-    let $user-timeline-uri := 'https://api.twitter.com/1.1/statuses/user_timeline.json'
-    let $method := 'GET'
-    let $twitter-consumer-key := 'YOUR-CONSUMER-KEY'
-    let $twitter-consumer-secret := 'YOUR-CONSUMER-SECRET'
-    let $twitter-access-token := 'YOUR-ACCESS-TOKEN'
-    let $twitter-access-token-secret := 'YOUR-ACCESS-TOKEN-SECRET';
-    let $timeline-json :=
-        oauth:request(
-            $user-timeline-uri,
-            $method,
-            $twitter-consumer-key, 
-            $twitter-consumer-secret,
-            $twitter-access-token,
-            $twitter-access-token-secret
-        )
-    return 
-        $timeline-json
+(To be completed...)
